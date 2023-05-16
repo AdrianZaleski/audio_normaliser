@@ -12,6 +12,9 @@ def normalize_volume(mp3_dir, mp3_files, target_dBFS):
         print("******************\n")
         print(f"Przerabiam utwor: {file}")
 
+        # Wywołanie metadanych:
+        meta_dane_piosenki = meta_dane_z_pliku(file)
+
         # załadowanie pliku mp3
         song = AudioSegment.from_file(file, format="mp3", ffmpeg_path=ffmpeg_path)
 
@@ -25,7 +28,8 @@ def normalize_volume(mp3_dir, mp3_files, target_dBFS):
         output_file = os.path.join(
             mp3_dir, "normalized", f"normalized_{os.path.basename(file)}"
         )
-        normalized_song.export(output_file, format="mp3")
+
+        normalized_song.export(out_f=output_file, format="mp3", tags=meta_dane_piosenki)
 
         # dodanie wartości głośności do listy przed normalizacją
         print(f"Glosnosc po normalizacji: {normalized_song.dBFS}")
@@ -53,7 +57,7 @@ def avg_volume(mp3_files: list) -> int:
         # dodanie wartości głośności do listy przed normalizacją
         print(f"Glosnosc przed: {song.dBFS} - utwor: {track}")
         volumes.append(song.dBFS)
-        print(f'\n*************************\n')
+        print(f"\n*************************\n")
         # Wywołanie metadanych:
         meta_dane_z_pliku(track)
 
@@ -72,11 +76,19 @@ def avg_volume(mp3_files: list) -> int:
 
     return avg_volume
 
-def meta_dane_z_pliku(song):
-    
-    
+
+def meta_dane_z_pliku(song) -> dict:
     # odczytanie metadanych z pliku oryginalnego
     metadata = mediainfo(song)
-    pretty_metadata = pprint.pformat(metadata)
 
-    print(f'metadata utworu: {song}: \n{pretty_metadata}')
+    # utworzenie słownika tagów
+    tags = {}
+
+    # iteracja po kluczach w słowniku metadanych
+    for key in metadata.get("TAG", {}):
+        # dodanie tagu do słownika tagów
+        tags[key] = metadata["TAG"][key]
+
+    print(f"metadata utworu: {tags}")
+
+    return tags

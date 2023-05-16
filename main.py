@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from audio_normaliser import avg_volume, normalize_volume, meta_dane_z_pliku
+from audio_normaliser import avg_volume, normalize_volume
 
 
 # TODO:
