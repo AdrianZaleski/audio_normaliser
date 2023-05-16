@@ -3,40 +3,52 @@ import pprint
 from pydub import AudioSegment
 from pydub.utils import which, mediainfo
 
+from mutagen import File
+from mutagen.id3 import ID3, ID3NoHeaderError
+
 # wskazanie ścieżki do ffmpeg - biblioteki potrzebnej do konwersji audio
 ffmpeg_path = which("ffmpeg")
 
 
 def normalize_volume(mp3_dir, mp3_files, target_dBFS):
-    for file in mp3_files:
-        print("******************\n")
-        print(f"Przerabiam utwor: {file}")
+    try:
+        for file in mp3_files:
+            print("******************\n")
+            print(f"Przerabiam utwor: {file}")
 
-        # Wywołanie metadanych:
-        meta_dane_piosenki = meta_dane_z_pliku(file)
+            # załadowanie pliku mp3
+            song = AudioSegment.from_file(file, format="mp3", ffmpeg_path=ffmpeg_path)
 
-        # załadowanie pliku mp3
-        song = AudioSegment.from_file(file, format="mp3", ffmpeg_path=ffmpeg_path)
+            # dodanie wartości głośności do listy przed normalizacją
+            print(f"Glosnosc przed: {song.dBFS}")
 
-        # dodanie wartości głośności do listy przed normalizacją
-        print(f"Glosnosc przed: {song.dBFS}")
+            # normalizacja poziomu głośności
+            normalized_song = song.apply_gain(target_dBFS - song.dBFS)
 
-        # normalizacja poziomu głośności
-        normalized_song = song.apply_gain(target_dBFS - song.dBFS)
+            # zapisanie znormalizowanego pliku mp3
+            output_file = os.path.join(
+                mp3_dir, "normalized", f"normalized_{os.path.basename(file)}"
+            )
 
-        # zapisanie znormalizowanego pliku mp3
-        output_file = os.path.join(
-            mp3_dir, "normalized", f"normalized_{os.path.basename(file)}"
-        )
+            normalized_song.export(out_f=output_file, format="mp3", bitrate=mediainfo(file)['bit_rate'])
 
-        normalized_song.export(out_f=output_file, format="mp3", tags=meta_dane_piosenki)
 
-        # dodanie wartości głośności do listy przed normalizacją
-        print(f"Glosnosc po normalizacji: {normalized_song.dBFS}")
+            # Kopiujemy tagi z pliku oryginalnego do nowego pliku
+            source_tags = ID3(file)
+            target_tags = ID3(output_file)
+            target_tags.update(source_tags)
+            target_tags.save()
 
-    print("**********\n")
-    print("Zakończono normalizację głośności.")
+            print("Plik został znormalizowany i zachowane zostały tagi.")
 
+            # dodanie wartości głośności do listy przed normalizacją
+            print(f"Glosnosc po normalizacji: {normalized_song.dBFS}")
+
+        print("**********\n")
+        print("Zakończono normalizację głośności.")
+
+    except ID3NoHeaderError:
+        print("Plik oryginalny nie zawiera nagłówka ID3.")
 
 def avg_volume(mp3_files: list) -> int:
     """Funkcja do określania średniej wartości głośności plików z zadanej listy.
@@ -81,6 +93,9 @@ def meta_dane_z_pliku(song) -> dict:
     # odczytanie metadanych z pliku oryginalnego
     metadata = mediainfo(song)
 
+    preety_meta = pprint.pformat(metadata)
+    print(f'preety_meta: \n{preety_meta}')
+    print(f'\n%%%%%%%%%%%%%%%%%%%%%%%%%\n')
     # utworzenie słownika tagów
     tags = {}
 
@@ -89,6 +104,6 @@ def meta_dane_z_pliku(song) -> dict:
         # dodanie tagu do słownika tagów
         tags[key] = metadata["TAG"][key]
 
-    print(f"metadata utworu: {tags}")
-
     return tags
+
+
