@@ -1,7 +1,8 @@
 import os
 from datetime import datetime
+import sys
 
-from audio_normaliser import avg_volume, normalize_volume
+from audio_normaliser import calculate_average_volume, normalize_volume
 
 
 # TODO:
@@ -19,17 +20,25 @@ mp3_dir = input("Podaj ścieżkę do folderu z plikami mp3: ")
 # zapisanie czasu początkowego
 start_time = datetime.now()
 
+# Pliki mp3:
 mp3_files = [
     os.path.join(mp3_dir, f) for f in os.listdir(mp3_dir) if f.lower().endswith(".mp3")
 ]
 
 ilosc_utworow = len(mp3_files)
+
 # średnia wartość głośności zestawu utworów:
-avg_volume_value = avg_volume(mp3_files)
+calculate_average_volume_value = calculate_average_volume(mp3_dir)
 
-print(f"\n###############################\n")
 
-normalize_volume(mp3_dir, mp3_files, avg_volume_value)
+# Sprawdzenie czy mamy wartość średnią do normalizacj:
+if calculate_average_volume_value: 
+    print(f"\n###############################\n")
+
+    normalize_volume(mp3_dir, mp3_files, calculate_average_volume_value)
+else: 
+    print(f'Brak wartosci normalizacji. Koniec programu')
+    sys.exit(1)
 
 # zapisanie czasu końcowego
 end_time = datetime.now()

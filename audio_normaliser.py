@@ -45,42 +45,46 @@ def normalize_volume(mp3_dir, mp3_files, target_dBFS):
     print("Zakończono normalizację głośności.")
 
 
-def avg_volume(mp3_files: list) -> int:
-    """Funkcja do określania średniej wartości głośności plików z zadanej listy.
+# Funkcja do obliczania średniej arytmetycznej głośności z utworów w folderach
+def calculate_average_volume(folder_path) -> float:
+    """Funkcja obliczająca średnią arytmetyczną wartość głośności wszystkich plików mp3 w folderach i podfolderach. W przypadku braku takich plików - zwracany jest None.
 
     Args:
-        mp3_files (list): lista plików, z której zostanie obliczona średnia wartość głośności
+        folder_path (_type_): Ścieżka do folderu nadrzędnego do normalizacji
 
     Returns:
-        int: średnia wartość głośności z listy
+        float or None: Średnia arytmetyczna głośności lub None
     """
 
-    # lista wartości głośności
-    volumes = []
+    values = []
 
-    for track in mp3_files:
-        song = AudioSegment.from_file(track, format="mp3", ffmpeg_path=ffmpeg_path)
-
-        # dodanie wartości głośności do listy przed normalizacją
-        print(f"Glosnosc przed: {song.dBFS} - utwor: {track}")
-        print(f"\n*************************\n")
-
-        volumes.append(song.dBFS)
-
-    # obliczenie minimalnej, maksymalnej i średniej wartości głośności po normalizacji
-    min_volume = min(volumes)
-    max_volume = max(volumes)
-    avg_volume = sum(volumes) / len(volumes)
-    avg_volume = round(avg_volume, 2)
-
-    print(f"Minimalna wartość głośności przed normalizacją:", min_volume)
-    print(f"Maksymalna wartość głośności przed normalizacją:", max_volume)
-    print(
-        f"Średnia wartość głośności dla {len(volumes)} przed normalizacją zaokrąglona do 2 miejsc po przecinku:",
-        avg_volume,
-    )
-
-    return avg_volume
+    for root, _, files in os.walk(folder_path):
+        print(f'\n root: {root}')
+        print(f'\n _: {_}')
+        print(f'\n files: {files}')
+        
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            if file_name.endswith(".mp3"):
+                audio = AudioSegment.from_file(file_path, format="mp3")
+                values.append(audio.dBFS)
+            
+    if values:
+        total_db = sum(values)
+        num_files = len(values)
+        average_db = round((total_db / num_files),2)
+        
+        print(f'total_db : {total_db}')
+        print(f'num_files : {num_files}')
+        print(f'max_db : {max(values)}')
+        print(f'average_db : {average_db}')
+        print(f'min_db : {min(values)}')
+        
+        result = average_db
+    else:
+        print("Brak plików mp3 w folderze.")
+        result = None
+    return result
 
 
 def meta_dane_z_pliku(song) -> dict:
@@ -96,3 +100,4 @@ def meta_dane_z_pliku(song) -> dict:
         tags[key] = metadata["TAG"][key]
 
     return tags
+
