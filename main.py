@@ -5,10 +5,11 @@ from audio_normaliser import avg_volume, normalize_volume
 
 
 # TODO:
+# - W przypadku błędu pliku - robić skip i dalej program działa
+#   - Zapisać nazwę pliku uszkodzonego/nie przerobionego
 # - Zapisanie wartości normalizacji do pliku
 # - Opcja do zaczytania wartości z pliku do normalizacji
 # - Przerabianie plików wewnątrz podfolderów
-# - Dodanie wgrywania oryginalnych metadanych z oryginału do normalizowanego pliku (tytuł, artysta, numer ścieżki itp.)
 
 
 # przykładowe użycie
