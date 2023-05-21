@@ -59,27 +59,27 @@ def calculate_average_volume(folder_path) -> float:
     values = []
 
     for root, _, files in os.walk(folder_path):
-        print(f'\n root: {root}')
-        print(f'\n _: {_}')
-        print(f'\n files: {files}')
-        
+        print(f"\n root: {root}")
+        print(f"\n _: {_}")
+        print(f"\n files: {files}")
+
         for file_name in files:
             file_path = os.path.join(root, file_name)
             if file_name.endswith(".mp3"):
                 audio = AudioSegment.from_file(file_path, format="mp3")
                 values.append(audio.dBFS)
-            
+
     if values:
         total_db = sum(values)
         num_files = len(values)
-        average_db = round((total_db / num_files),2)
-        
-        print(f'total_db : {total_db}')
-        print(f'num_files : {num_files}')
-        print(f'max_db : {max(values)}')
-        print(f'average_db : {average_db}')
-        print(f'min_db : {min(values)}')
-        
+        average_db = round((total_db / num_files), 2)
+
+        print(f"total_db : {total_db}")
+        print(f"num_files : {num_files}")
+        print(f"max_db : {max(values)}")
+        print(f"average_db : {average_db}")
+        print(f"min_db : {min(values)}")
+
         result = average_db
     else:
         print("Brak plików mp3 w folderze.")
@@ -101,3 +101,46 @@ def meta_dane_z_pliku(song) -> dict:
 
     return tags
 
+
+def calculate_average_volume_from_list(song_list) -> float:
+    """Funkcja obliczająca średnią arytmetyczną wartość głośności wszystkich plików mp3 w dostarczonej liście. W przypadku braku takich plików - zwracany jest None.
+
+    Args:
+        song_list (list): lista plików, z których obliczana będzie średnia wartość głośności
+
+    Returns:
+        float or None: Średnia arytmetyczna głośności lub None
+    """
+
+    values = []
+
+    for file_name in song_list:
+        if file_name.endswith(".mp3"):
+            audio = AudioSegment.from_file(file_name, format="mp3")
+            values.append(audio.dBFS)
+
+    if values:
+        total_db = sum(values)
+        num_files = len(values)
+        average_db = round((total_db / num_files), 2)
+
+        target_db_file = "target_volume.txt"
+        with open(target_db_file, "w") as f:
+            f.write(str(average_db))
+
+        print(f"\n****** DEBUG ****** ")
+        print(f"****** calculate_average_volume_from_list ******\n ")
+        print(f"total_db : {total_db}")
+        print(f"num_files : {num_files}")
+        print(f"max_db : {max(values)}")
+        print(f"average_db : {average_db}")
+        print(f"min_db : {min(values)}")
+        print(f"Zapisano srednia glosnosc do pliku : {target_db_file}")
+
+        print(f"\n****** DEBUG END ******\n ")
+
+        result = average_db
+    else:
+        print("Brak plików mp3 w folderze.")
+        result = None
+    return result
