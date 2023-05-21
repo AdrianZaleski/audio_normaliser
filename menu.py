@@ -86,6 +86,11 @@ def conversion_menu(songs_list: list):
 
         if choice == 1:
             # Normalizacja głośności do wartości z pliku
+            # Otwieranie pliku do odczytu
+            with open("target_volume.txt", "r") as file:
+                # Odczyt zawartości pliku
+                glosnosc_z_pliku = file.read()
+            print(f"wartosc glosnosci z pliku: {glosnosc_z_pliku}")
             pass
         elif choice == 2:
             # Normalizacja głośności do średniej wartości z listy plików
