@@ -15,11 +15,14 @@ import sys
 def select_single_file():
     file_list = []
     file_path = input("Podaj dokładną ścieżkę do pliku: ")
-    if os.path.isfile(file_path) and file_path.lower().endswith(".mp3"):
+    if (
+        os.path.isfile(file_path)
+        and file_path.lower().endswith(".mp3")
+        and os.path.getsize(file_path) > 0
+    ):
         file_list.append(file_path)
     else:
         print("Podana ścieżka nie prowadzi do pliku.")
-        file_list = []
 
     return file_list
 
@@ -30,7 +33,11 @@ def create_file_list():
         file_path = input("Podaj ścieżkę do pliku (lub wpisz 'q' aby zakończyć): ")
         if file_path == "q":
             break
-        elif os.path.isfile(file_path) and file_path.lower().endswith(".mp3"):
+        elif (
+            os.path.isfile(file_path)
+            and file_path.lower().endswith(".mp3")
+            and os.path.getsize(file_path) > 0
+        ):
             file_list.append(file_path)
         else:
             print("Podana ścieżka nie prowadzi do pliku.")
@@ -43,9 +50,9 @@ def select_single_folder():
         file_list = [
             os.path.join(folder_path, file)
             for file in os.listdir(folder_path)
-            if os.path.isfile(
-                os.path.join(folder_path, file) and file.lower().endswith(".mp3")
-            )
+            if os.path.isfile(os.path.join(folder_path, file))
+            and file.lower().endswith(".mp3")
+            and os.path.getsize(os.path.join(folder_path, file)) > 0
         ]
 
         return file_list
@@ -54,18 +61,21 @@ def select_single_folder():
         return []
 
 
-def select_folder_and_subfolders():
+def select_folder_and_subfolders() -> list:
+    file_list = []
     folder_path = input("Podaj ścieżkę do folderu: ")
     if os.path.isdir(folder_path):
-        file_list = []
         for root, dirs, files in os.walk(folder_path):
             for file in files:
-                if file.lower().endswith(".mp3"):
+                if (
+                    file.lower().endswith(".mp3")
+                    and os.path.getsize(os.path.join(root, file)) > 0
+                ):
                     file_list.append(os.path.join(root, file))
-        return file_list
     else:
         print("Podana ścieżka nie prowadzi do folderu.")
-        return []
+
+    return file_list
 
 
 def menu():
@@ -90,10 +100,6 @@ def menu():
             sys.exit(0)
         else:
             print("Nieprawidłowa opcja. Wybierz ponownie")
-
-    # print("Lista plików:")
-    # for file in file_list:
-    #     print(file)
 
 
 if __name__ == "__main__":
