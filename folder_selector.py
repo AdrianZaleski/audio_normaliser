@@ -12,7 +12,13 @@ import os
 import sys
 
 
-def select_single_file():
+def select_single_file() -> list:
+    """Funkcja do wyboru pojedynczego pliku mp3 z dokłej lokalizacji tego pliku
+
+    Returns:
+        list: lista jednoelementow ze ścieżką do pliku mp3
+    """
+
     file_list = []
     file_path = input("Podaj dokładną ścieżkę do pliku: ")
     if (
@@ -29,6 +35,7 @@ def select_single_file():
 
 def create_file_list():
     file_list = []
+
     while True:
         file_path = input("Podaj ścieżkę do pliku (lub wpisz 'q' aby zakończyć): ")
         if file_path == "q":
@@ -45,6 +52,7 @@ def create_file_list():
 
 
 def select_single_folder():
+    file_list = []
     folder_path = input("Podaj ścieżkę do folderu: ")
     if os.path.isdir(folder_path):
         file_list = [
@@ -55,10 +63,10 @@ def select_single_folder():
             and os.path.getsize(os.path.join(folder_path, file)) > 0
         ]
 
-        return file_list
     else:
-        print("Podana ścieżka nie prowadzi do folderu.")
-        return []
+        print("Podana ścieżka nie prowadzi do folderu z utworami mp3.")
+
+    return file_list
 
 
 def select_folder_and_subfolders() -> list:
