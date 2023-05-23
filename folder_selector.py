@@ -9,6 +9,7 @@ Moduł służący do wybierania plików mp3 wraz z własnym menu wyboru:
 
 """
 import os
+import shutil
 import sys
 
 
@@ -110,5 +111,33 @@ def menu():
             print("Nieprawidłowa opcja. Wybierz ponownie")
 
 
-if __name__ == "__main__":
-    menu()
+# TODO: Wstępna przymiarka do metody zapisywania plików:
+# Metoda zapisywania plików:
+def save_normalized_file(file_path, output_folder=None, overwrite=False):
+    # Pobranie nazwy pliku
+    file_name = os.path.basename(file_path)
+
+    # Ustalenie folderu docelowego
+    if output_folder is None:
+        # Zapis do folderu, w którym znajduje się oryginalny plik
+        output_folder = os.path.dirname(file_path)
+
+        # Utworzenie folderu 'normalized' w folderze docelowym
+        output_folder = os.path.join(output_folder, "normalized")
+        os.makedirs(output_folder, exist_ok=True)
+    else:
+        # Utworzenie folderu docelowego, jeśli nie istnieje
+        os.makedirs(output_folder, exist_ok=True)
+
+    # Utworzenie ścieżki pliku docelowego
+    output_file = os.path.join(output_folder, file_name)
+
+    # Sprawdzenie, czy plik docelowy już istnieje i czy ma być nadpisany
+    if os.path.isfile(output_file) and not overwrite:
+        print("Plik docelowy już istnieje. Ustaw `overwrite=True`, aby go nadpisać.")
+        return
+
+    # Kopia pliku po normalizacji do pliku docelowego
+    shutil.copyfile(file_path, output_file)
+
+    print("Plik został zapisany:", output_file)
