@@ -138,6 +138,12 @@ def normalize_volume(song_list, target_dBFS):
             f"{os.path.basename(file)}",
         )
 
+        # Sprawdzenie czy plik o tej samej nazwie istnieje w lokalizacji docelowej
+        if os.path.exists(output_file):
+            print(f"Plik o tej nazwie istnieje juz w docelowej lokalizacji. Nadpisuje!")
+            # Zmiana uprawnień do pliku, umożliwienie zapisu
+            os.chmod(output_file, 0o777)
+
         # Eksport pliku i dodanie metadanych z oryginału
         normalized_song.export(
             out_f=output_file,
@@ -146,11 +152,13 @@ def normalize_volume(song_list, target_dBFS):
             id3v2_version="3",
             tags=meta_dane_z_pliku(file),
         )
-        t2 = time.time()
+
         # Wypisanie wartości głośności po normalizacji
         print(f"Glosnosc po normalizacji: {normalized_song.dBFS}")
-
         print("Plik został znormalizowany i zachowane zostały tagi.")
+
+        t2 = time.time()
+
         print(
             f"Przerobiono utwor: {i}/{len(song_list)} ({100*i//len(song_list)}%)",
             end="",
