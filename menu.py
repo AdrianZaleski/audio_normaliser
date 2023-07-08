@@ -11,6 +11,7 @@ from audio_normaliser import (
 )
 from folder_selector import (
     create_file_list,
+    save_in_user_folder,
     select_folder_and_subfolders,
     select_single_file,
     select_single_folder,
@@ -90,6 +91,10 @@ def conversion_menu(songs_list: list):
         )
         choice = get_user_choice(4)
 
+        if choice != 4:
+            # Wybór nadrzędnego folderu docelowego:
+            user_output_folder_path = save_in_user_folder()
+
         if choice == 1:
             # Normalizacja głośności do wartości z pliku
 
@@ -132,7 +137,7 @@ def conversion_menu(songs_list: list):
             print(f"srednia wartosc: {srednia_wartosc}")
 
             # Proces normalizacji
-            normalize_volume(songs_list, srednia_wartosc)
+            normalize_volume(songs_list, srednia_wartosc, user_output_folder_path)
 
             # zapisanie czasu końcowego
             end_time = datetime.now()

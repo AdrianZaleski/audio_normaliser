@@ -44,7 +44,6 @@ def calculate_average_volume_from_list(song_list) -> float:
 
     for file_name in song_list:
         print(f"Sprawdzam glosnosc utworu: {file_name}")
-
         if file_name.lower().endswith(".mp3"):
             min_value = min(values) if values else float("inf")
             max_value = max(values) if values else (-float("inf"))
@@ -85,6 +84,25 @@ def calculate_average_volume_from_list(song_list) -> float:
         print(
             f"\nNajglosniejszy utwor: ({min(values)}dB: \n{maximum['najglosniejszy'][1]}"
         )
+        top_values = "top_values.txt"
+        with open(top_values, "w") as f:
+            f.write("Przerobiono: " + len(values) + " piosenek. \n")
+
+            f.write(
+                "najgloszniejsza piosenka: "
+                + str(max(values))
+                + "nalezy do: "
+                + maximum["najglosniejszy"][1]
+                + "\n"
+            )
+
+            f.write(
+                "najcichsza piosenka: "
+                + str(min(values))
+                + "nalezy do: "
+                + maximum["najcichszy"][1]
+                + "\n"
+            )
 
         print(f"\n****** DEBUG END ******\n ")
 
@@ -96,7 +114,9 @@ def calculate_average_volume_from_list(song_list) -> float:
 
 
 # Normalizacja głośności listy plików:
-def normalize_volume(song_list, target_dBFS):
+def normalize_volume(
+    song_list: list, target_dBFS: float, user_output_folder_path: str = None
+):
     """Głowny proces normalizacji głośności plików mp3 do zadanej wartości głośności.
     Dodatkowo zapisuje pliki w określonej lokalizacji.
 
@@ -104,6 +124,51 @@ def normalize_volume(song_list, target_dBFS):
         song_list (list): lista utworów mp3 do przerobienia
         target_dBFS (float): wartość głośności do jakiej ma być przeprowadzona normalizacja
     """
+
+    def zbuduj_sciezke(user_output_folder_path, file):
+        print("\n*****************************************\n")
+
+        nazwa_pliku = os.path.basename(file)
+        print(f"nazwa_folderu: {nazwa_pliku}")
+        podfoldery = os.path.dirname(file)
+        print(f"podfoldery: {podfoldery}")
+
+        # Usuń początkowe separatory, jeśli istnieją
+        if podfoldery.startswith("\\") or podfoldery.startswith("/"):
+            podfoldery = podfoldery[1:]
+
+        # Sprawdź, czy podfoldery zawierają ścieżkę folderu użytkownika
+        if podfoldery.startswith(user_output_folder_path):
+            podfoldery = podfoldery[
+                len(user_output_folder_path) :
+            ]  # Wyodrębnij część poza folderem użytkownika
+
+            # Usuń początkowe separatory, jeśli istnieją
+            if podfoldery.startswith("\\") or podfoldery.startswith("/"):
+                podfoldery = podfoldery[1:]
+
+        # Usuń początkową część do drugiego separatora katalogów
+        podfoldery = "\\".join(podfoldery.split("\\")[1:])
+        print(f"podfoldery po poprawkach: {podfoldery}")
+        print(f"przed user_output_folder_path = {user_output_folder_path}")
+        # Normalizuj ścieżki, aby dostosować separatorki
+        user_output_folder_path = os.path.normpath(user_output_folder_path)
+        print(f"po normalizacji user_output_folder_path = {user_output_folder_path}")
+
+        podfoldery = os.path.normpath(podfoldery)
+
+        docelowa_sciezka = os.path.join(
+            user_output_folder_path,
+            podfoldery,
+        )
+        if not os.path.exists(docelowa_sciezka):
+            os.makedirs(docelowa_sciezka, exist_ok=True)
+
+        docelowa_ściezka_z_plikiem = os.path.join(docelowa_sciezka, nazwa_pliku)
+        print(f"docelowa sciezka: {docelowa_ściezka_z_plikiem}")
+        print("\n*****************************************\n")
+
+        return docelowa_ściezka_z_plikiem
 
     i = 0
     t0 = time.time()
@@ -122,21 +187,27 @@ def normalize_volume(song_list, target_dBFS):
         # normalizacja poziomu głośności
         normalized_song = song.apply_gain(target_dBFS - song.dBFS)
 
-        # ścieżka do aktualnego pliku:
-        mp3_folder = os.path.dirname(file)
+        # Ścieżka docelowa dostarczona przez użytkownika
+        if user_output_folder_path:
+            output_file = zbuduj_sciezke(user_output_folder_path, file)
+        else:
+            print(f"Nie podano docelowego folderu przez uzytkownika")
 
-        # Sprawdzenie i utworzenie folderu 'normalized', jeśli nie istnieje
-        output_folder = os.path.join(mp3_folder, "normalized")
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder, exist_ok=True)
+            # ścieżka do aktualnego pliku:
+            mp3_folder = os.path.dirname(file)
+            # Sprawdzenie i utworzenie folderu 'normalized', jeśli nie istnieje
+            output_folder = os.path.join(mp3_folder, "normalized")
 
-        # zapisanie znormalizowanego pliku mp3 w lokaliacji: normalized
-        output_file = os.path.join(
-            # mp3_folder, "normalized", f"normalized_{os.path.basename(file)}"
-            mp3_folder,
-            "normalized",
-            f"{os.path.basename(file)}",
-        )
+            if not os.path.exists(output_folder):
+                os.makedirs(output_folder, exist_ok=True)
+
+                # zapisanie znormalizowanego pliku mp3 w lokaliacji: normalized
+                output_file = os.path.join(
+                    # mp3_folder, "normalized", f"normalized_{os.path.basename(file)}"
+                    mp3_folder,
+                    "normalized",
+                    f"{os.path.basename(file)}",
+                )
 
         # Sprawdzenie czy plik o tej samej nazwie istnieje w lokalizacji docelowej
         if os.path.exists(output_file):

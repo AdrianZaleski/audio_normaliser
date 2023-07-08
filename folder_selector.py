@@ -141,3 +141,27 @@ def save_normalized_file(file_path, output_folder=None, overwrite=False):
     shutil.copyfile(file_path, output_file)
 
     print("Plik został zapisany:", output_file)
+
+
+# Zapisanie w folderze wybranym przez użytkownika
+def save_in_user_folder():
+    # pobranie od użytkonika lokalizacji zapisu plików:
+    user_output_folder_path = input("Podaj gdzie zapisać pliki: ")
+
+    if os.path.isdir(user_output_folder_path):
+        result = user_output_folder_path
+    elif user_output_folder_path == "exit":
+        result = None
+    else:
+        print("Podana ścieżka nie jest poprawna dla folderów.")
+        print("Nie zapisujemy w lokalizacji uzytkownika.")
+        result = None
+
+    return result
+
+
+# Sprawdzenie czy folder docelowy nie jest taki sam jak pliku:
+# if user_output_folder_path != os.path.dirname(file_path):
+#     print("Wykorzystamy lokalizacje uzytkownika")
+# else:
+#     print("Podana jest ta sama lokalizacja.")
